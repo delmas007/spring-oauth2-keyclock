@@ -1,11 +1,13 @@
 import { Component } from '@angular/core';
 import {NgForOf} from '@angular/common';
 import {HttpClient} from '@angular/common/http';
+import {KeycloakAngularModule} from 'keycloak-angular';
 
 @Component({
   selector: 'app-products',
   imports: [
-    NgForOf
+    NgForOf,
+    KeycloakAngularModule
   ],
   templateUrl: './products.html',
   styleUrl: './products.css'
