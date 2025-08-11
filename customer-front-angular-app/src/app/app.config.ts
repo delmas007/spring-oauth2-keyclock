@@ -7,8 +7,9 @@ import {
 import { provideRouter } from '@angular/router';
 
 import { routes } from './app.routes';
-import {provideHttpClient} from '@angular/common/http';
+import {provideHttpClient, withInterceptors} from '@angular/common/http';
 import {KeycloakService} from 'keycloak-angular';
+import {bearerInterceptor} from './services/bearer-interceptor';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -22,7 +23,7 @@ export const appConfig: ApplicationConfig = {
       deps: [KeycloakService]
     },
     KeycloakService,
-    provideHttpClient()
+    provideHttpClient(withInterceptors([bearerInterceptor]))
   ]
 };
 

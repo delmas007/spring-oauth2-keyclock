@@ -1,0 +1,36 @@
+import { Injectable } from '@angular/core';
+import {KeycloakEventType, KeycloakEventTypeLegacy, KeycloakService} from 'keycloak-angular';
+import {KeycloakProfile} from 'keycloak-js';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class Security {
+  public profile? : KeycloakProfile;
+  constructor (public kcService: KeycloakService) {
+    this.init();
+  }
+  init(){
+    console.log("Init ....")
+    this.kcService.keycloakEvents$.subscribe({
+      next: (e) => {
+        console.log(e);
+        if (e.type == KeycloakEventTypeLegacy.OnAuthSuccess) {
+          console.log("OnAuthSuccess")
+          this.kcService.loadUserProfile().then(profile=>{
+            this.profile=profile;
+          });
+        }
+      },
+      error : err => {
+        console.log(err);
+      }
+    });
+  }
+  public hasRoleIn(roles:string[]):boolean{
+    let userRoles = this.kcService.getUserRoles();
+    for(let role of roles){
+      if (userRoles.includes(role)) return true;
+    } return false;
+  }
+}
