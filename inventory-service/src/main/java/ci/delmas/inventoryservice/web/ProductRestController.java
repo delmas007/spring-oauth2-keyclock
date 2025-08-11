@@ -2,6 +2,7 @@ package ci.delmas.inventoryservice.web;
 
 import ci.delmas.inventoryservice.entities.Product;
 import ci.delmas.inventoryservice.repository.ProductRepository;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -18,7 +19,7 @@ public class ProductRestController {
         this.productRepository = productRepository;
     }
     @GetMapping("/products")
-    //@PreAuthorize("hasAuthority('ADMIN')")
+//    @PreAuthorize("hasAuthority('ADMIN')")
     public List<Product> products(){
         return productRepository.findAll();
     }
