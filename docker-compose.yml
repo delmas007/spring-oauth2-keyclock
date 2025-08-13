@@ -1,0 +1,96 @@
+services:
+  mysql-db-inventory:
+    image: mariadb:10.6
+    container_name: mysql-db-inventory
+    restart: always
+    volumes:
+      - mysql_data:/var/lib/mysql
+    environment:
+      MYSQL_DATABASE: inventory-db
+      MYSQL_USER: delmas
+      MYSQL_PASSWORD: 12345
+      MYSQL_ROOT_PASSWORD: admin
+    ports:
+      - "3306:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      retries: 10
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: phpmyadmin
+    restart: always
+    environment:
+      PMA_HOST: mysql-db-inventory
+      PMA_PORT: 3306
+      PMA_ARBITRARY: 12345
+    ports:
+      - "9999:80"
+    depends_on:
+      - mysql-db-inventory
+  inventory-service:
+    build: ./inventory-service
+    container_name: inventory-service
+    ports:
+      - '8098:8098'
+    expose:
+      - '8098'
+    env_file:
+      - .env
+    depends_on:
+      - mysql-db-inventory
+  postgres-service:
+    image: postgres:17.0
+    container_name: postgres-service
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=keycloak
+      - POSTGRES_PASSWORD=k1234
+      - POSTGRES_DB=keycloak
+    ports:
+      - "5432:5432"
+    expose:
+      - "5432"
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U keycloak -d keycloak" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin
+    restart: always
+    ports:
+      - "5050:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: delmas@gmail.com
+      PGADMIN_DEFAULT_PASSWORD: delmas
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.3.2
+    container_name: keycloak
+    environment:
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://postgres-service:5432/keycloak
+      KC_DB_USERNAME: keycloak
+      KC_DB_PASSWORD: k1234
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+    command:
+      - start-dev
+    ports:
+      - "8080:8080"
+    expose:
+      - "8080"
+    depends_on:
+      postgres-service:
+        condition: service_healthy
+
+
+volumes:
+  mysql_data:
+  postgres_data:
+  pgadmin_data:

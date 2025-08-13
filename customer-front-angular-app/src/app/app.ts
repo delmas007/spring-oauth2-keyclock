@@ -20,10 +20,8 @@ export class App implements OnInit{
     if(this.keycloakService.isLoggedIn()){
       this.keycloakService.loadUserProfile().then(profile=>{
         this.profile=profile
-        console.log("User profile loaded:", this.profile);
       });
       this.keycloakService.getToken().then(token => {
-        console.log("User token:", token);
         localStorage.setItem('token', token);
       });
     }
