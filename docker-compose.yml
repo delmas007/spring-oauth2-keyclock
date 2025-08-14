@@ -16,6 +16,7 @@ services:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       interval: 5s
       retries: 10
+
   phpmyadmin:
     image: phpmyadmin:latest
     container_name: phpmyadmin
@@ -28,6 +29,7 @@ services:
       - "9999:80"
     depends_on:
       - mysql-db-inventory
+
   inventory-service:
     build: ./inventory-service
     container_name: inventory-service
@@ -39,6 +41,19 @@ services:
       - .env
     depends_on:
       - mysql-db-inventory
+
+  customer-service-thymeleaf:
+    build: ./customer-front-thymeleaft-app
+    container_name: customer-service-thymeleaf
+    ports:
+      - '8090:8090'
+    expose:
+      - '8090'
+    env_file:
+      - .env
+    restart: always
+    depends_on:
+      - keycloak
   postgres-service:
     image: postgres:17.0
     container_name: postgres-service
@@ -58,6 +73,7 @@ services:
       timeout: 10s
       retries: 5
       start_period: 30s
+
   pgadmin:
     image: dpage/pgadmin4
     container_name: pgadmin
@@ -69,6 +85,7 @@ services:
       PGADMIN_DEFAULT_PASSWORD: delmas
     volumes:
       - pgadmin_data:/var/lib/pgadmin
+
   keycloak:
     image: quay.io/keycloak/keycloak:26.3.2
     container_name: keycloak
@@ -88,9 +105,20 @@ services:
     depends_on:
       postgres-service:
         condition: service_healthy
+  front-end-angular:
+    build: ./customer-front-angular-app
+    container_name: front-end-angular
+    ports:
+      - '82:80'
+    expose:
+      - '82'
 
 
 volumes:
   mysql_data:
   postgres_data:
   pgadmin_data:
+
+networks:
+  my-network:
+    driver: bridge
